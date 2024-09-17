@@ -41,9 +41,9 @@ class ParsecGLKRenderer:NSObject, GLKViewDelegate, GLKViewControllerDelegate
 		let startTime = CFAbsoluteTimeGetCurrent()
 		CParsec.renderGLFrame(timeout:16)
 		let endTime = CFAbsoluteTimeGetCurrent()
-		if 1000 * (endTime - startTime) > 16 {
-			print("代码执行时长：\((endTime - startTime)*1000) 毫秒")
-		}
+//		if 1000 * (endTime - startTime) > 16 {
+//			print("代码执行时长：\((endTime - startTime)*1000) 毫秒")
+//		}
 		
 		updateImage()
 		

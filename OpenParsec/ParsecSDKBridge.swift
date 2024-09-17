@@ -26,6 +26,10 @@ enum CursorMode:Int
     case direct
 }
 
+enum JustError: Error {
+	case unknown
+}
+
 struct KeyBoardKeyEvent {
 	var input: UIKey?
 	var isPressBegin: Bool
@@ -157,10 +161,19 @@ class ParsecSDKBridge: ParsecService
 	var getFirstCursor = false
 	var mousePositionRelative = false
 
+
+
+	
+	
 	func pollEvent(timeout:UInt32 = 16) // timeout in ms, 16 == 60 FPS, 8 == 120 FPS, etc.
 	{
+		
+		
 		var e: ParsecClientEvent!
 		var _event = ParsecClientEvent()
+		
+
+		
 		withUnsafeMutablePointer(to: &_event, {(_eventPtr) in
 			ParsecClientPollEvents(_parsec, timeout, _eventPtr)
 			e = _eventPtr.pointee
@@ -195,20 +208,37 @@ class ParsecSDKBridge: ParsecService
 			
 			
 			var colors = [RGBA]()
-			let count = size << 2
+			let count = size
+			
+			print("Size:\(count)")
+			//cursor color
 			for i in 0..<count {
 					
 				// Bind the memory at the calculated offset to the struct type
-				let boundPointer = pointer!.bindMemory(to: RGBA.self, capacity: 1)
-					
+				let boundPointer = pointer!.bindMemory(to: RGBA.self, capacity: Int(count))
+				
 				// Access the struct at the current offset
-				let currentStruct = boundPointer.advanced(by: Int(i)).pointee
+				let currentStruct : RGBA
+				
+				if(count > 6256){
+					let tempIndex = i % 4095
+					currentStruct = boundPointer.advanced(by: Int(tempIndex)).pointee
+					colors.append(currentStruct)
+					continue
+				}
+				
+				if(count <= 6256){
+					currentStruct = boundPointer.advanced(by: Int(i)).pointee
+				}else{
+					currentStruct = RGBA(R: 1, G: 1, B: 1, A: 255)
+				}
 					
 				// Append the struct to the array
 				colors.append(currentStruct)
+					
+				
 			}
 			ParsecFree(pointer)
-			
 			
 			let _: Int = colors.count
 			let elmentLength: Int = 4
@@ -899,6 +929,7 @@ class ParsecSDKBridge: ParsecService
 
 		let item2 = DispatchWorkItem {
 			while self.backgroundTaskRunning {
+				
 				self.pollEvent()
 	
 				

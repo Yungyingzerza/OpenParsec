@@ -70,7 +70,7 @@ class KeyboardTestController:UIViewController
 		let startTime = CFAbsoluteTimeGetCurrent()
 		let endTime = CFAbsoluteTimeGetCurrent()
 		 
-		print("代码执行时长：\((endTime - startTime)*1000) 毫秒")
+//		print("代码执行时长：\((endTime - startTime)*1000) 毫秒")
 		setNeedsUpdateOfPrefersPointerLocked()
 
 		// Add the gesture recognizer to your view
