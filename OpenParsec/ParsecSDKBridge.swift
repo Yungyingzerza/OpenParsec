@@ -337,42 +337,79 @@ class ParsecSDKBridge: ParsecService
 		ParsecClientSendMessage(_parsec, &motionMessage)
 	}
 
+	var deleteKeyTimer: Timer?
+	var isLongPressingDelete = false
+	let longPressThreshold = 0.20 // Time threshold for long press detection in seconds
+
+	
 	func sendKeyboardMessage(event:KeyBoardKeyEvent)
 	{
 		if event.input == nil {
 			return
 		}
-//		var key =
 		
-//		print("code =  \(event.input?.keyCode)")
-//		key = event.input?.characters.uppercased() ?? " "
-//		
-//		if key == " " {
-//			key = "SPACE"
-//		}
+		guard let keyCode = event.input?.keyCode else {
+				return
+			}
+		
+		var keyboardMessagePress = createKeyboardMessage(event: event, keyCode: keyCode)
 
-//		switch sender.modifierFlags.rawValue
-//		{
-//			case 131072:
-//				key = "SHIFT"
-//				break
-//			case 262144:
-//				key = "CONTROL"
-//				break
-//
-//			default:
-//				break
-//		}
-//
-//		print("Keyboard Message: \(key)")
-//		print("KeyboardViewController keyboard modifier info \(sender.modifierFlags.rawValue)")
 		
+		// Check if it's the Delete key
+		if keyCode == UIKeyboardHIDUsage.keyboardDeleteOrBackspace {
+			handleDeleteKeyPress(event: event)
+		} else {
+			// For other keys, just send the message as usual
+			ParsecClientSendMessage(self._parsec, &keyboardMessagePress)
+		}
+		
+		
+	}
+	
+	func createKeyboardMessage(event: KeyBoardKeyEvent, keyCode: UIKeyboardHIDUsage) -> ParsecMessage {
+		var keyboardMessage = ParsecMessage()
+		keyboardMessage.type = MESSAGE_KEYBOARD
+		keyboardMessage.keyboard.code = ParsecKeycode(UInt32(ParsecSDKBridge.uiKeyCodeToInt(key: keyCode)))
+		keyboardMessage.keyboard.pressed = event.isPressBegin
+		return keyboardMessage
+	}
+
+	func handleDeleteKeyPress(event: KeyBoardKeyEvent) {
+		if event.isPressBegin {
+			// Start a timer for long press detection when the delete key is pressed
+			isLongPressingDelete = false
+			deleteKeyTimer = Timer.scheduledTimer(withTimeInterval: longPressThreshold, repeats: false) { [weak self] _ in
+				self?.startDeleteKeyLongPress()
+			}
+		} else {
+			// If the key is released before the long press threshold, treat it as a single press
+			deleteKeyTimer?.invalidate()
+
+			if !isLongPressingDelete {
+				// Send a single delete key press
+				sendDeleteKeyPress(pressed: true)
+				sendDeleteKeyPress(pressed: false)
+			}
+
+			isLongPressingDelete = false
+		}
+	}
+	
+	func startDeleteKeyLongPress() {
+		isLongPressingDelete = true
+		deleteKeyTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+			self.sendDeleteKeyPress(pressed: true)
+		}
+	}
+
+	func sendDeleteKeyPress(pressed: Bool) {
 		var keyboardMessagePress = ParsecMessage()
 		keyboardMessagePress.type = MESSAGE_KEYBOARD
-		keyboardMessagePress.keyboard.code = ParsecKeycode(UInt32(ParsecSDKBridge.uiKeyCodeToInt(key: event.input?.keyCode ?? UIKeyboardHIDUsage.keyboardErrorUndefined)))
-		keyboardMessagePress.keyboard.pressed = event.isPressBegin
+		keyboardMessagePress.keyboard.code = ParsecKeycode(UInt32(ParsecSDKBridge.uiKeyCodeToInt(key: UIKeyboardHIDUsage.keyboardDeleteOrBackspace)))
+		keyboardMessagePress.keyboard.pressed = pressed
 		ParsecClientSendMessage(_parsec, &keyboardMessagePress)
 	}
+	
 	
 	static func uiKeyCodeToInt(key: UIKeyboardHIDUsage) -> Int {
 		switch key {
