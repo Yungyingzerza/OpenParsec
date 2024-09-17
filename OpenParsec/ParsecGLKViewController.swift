@@ -37,10 +37,13 @@ class ParsecGLKViewController : ParsecPlayground {
 	
 	let viewController: UIViewController
 	
+	
 	required init(viewController: UIViewController, updateImage: @escaping () -> Void) {
 		self.viewController = viewController
 		self.updateImage = updateImage
 	}
+	
+	
 
 	public func viewDidLoad() {
 		glkView = GLKView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))

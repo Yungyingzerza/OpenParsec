@@ -3,6 +3,16 @@ import UIKit
 
 class KeyboardViewController:UIViewController
 {
+	override var prefersStatusBarHidden: Bool {
+		return true // Return true to hide the status bar
+	}
+	
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		// Call this to update the status bar appearance
+		setNeedsStatusBarAppearanceUpdate()
+	}
+	
 	override func viewDidLoad()
 	{
 		super.viewDidLoad()

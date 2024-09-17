@@ -5,6 +5,7 @@ class AppDelegate:UIResponder, UIApplicationDelegate
 {
 	func application(_ application:UIApplication, didFinishLaunchingWithOptions launchOptions:[UIApplication.LaunchOptionsKey: Any]?) -> Bool
 	{
+		application.isStatusBarHidden = true;
 		// Override point for customization after application launch.
 		UTMViewControllerPatches.patchAll()
 		return true
@@ -28,4 +29,6 @@ class AppDelegate:UIResponder, UIApplicationDelegate
 	{
 		CParsec.destroy()
 	}
+	
+	
 }
